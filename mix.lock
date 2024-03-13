@@ -1,0 +1,4 @@
+%{
+  "array": {:hex, :array, "1.0.1", "c0ae92d35e891e56f80b605b77c2dba6972302f7716719eee0b5417162c695b0", [:mix], [], "hexpm", "626ac1383566dadee3a10357cd6d192151c6d604ee3266809daf0da6b5e33bbb"},
+  "table_rex": {:hex, :table_rex, "4.0.0", "3c613a68ebdc6d4d1e731bc973c233500974ec3993c99fcdabb210407b90959b", [:mix], [], "hexpm", "c35c4d5612ca49ebb0344ea10387da4d2afe278387d4019e4d8111e815df8f55"},
+}
