@@ -1,6 +1,8 @@
 # Tictactoe
 
-**TODO: Add description**
+A basic Tic-Tac-Toe game created in Elixir and playable on the console!
+Still a work-in-progress, but when it is done it is able to support players taking turns
+filling out a board until a row is complete or the board is filled.
 
 ## Installation
 
@@ -18,4 +20,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/tictactoe>.
-
