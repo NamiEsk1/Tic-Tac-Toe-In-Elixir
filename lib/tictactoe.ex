@@ -12,11 +12,11 @@ defmodule Tictactoe do
 -----------------------------------"
 
   def start(_type, _args) do
-    Tictactoe.main()
+    Tictactoe.setup_game()
     Supervisor.start_link([], strategy: :one_for_one)
   end
 
-  def main do
+  def setup_game do
     IO.puts(@title)
 
     internal_gridmap = %{
@@ -30,20 +30,59 @@ defmodule Tictactoe do
       c1: :-,
       c2: :-
     }
-    IO.inspect(internal_gridmap)
     grid = TableRex.Table.new(convert_map_to_grid(internal_gridmap))
-    grid = TableRex.Table.put_column_meta(grid, :all, color: &Tictactoe.decide_color/2, padding: 4)
-    grid = TableRex.Table.put_column_meta(grid, 3, padding: 1)
+     |> TableRex.Table.put_column_meta(:all, color: &Tictactoe.decide_color/2, padding: 4)
+      |> TableRex.Table.put_column_meta(3, padding: 1)
     IO.puts(TableRex.Table.render!(grid, horizontal_style: :all, intersection_symbol: "•"))
 
-    internal_gridmap = ask_for_coordinates(internal_gridmap)
+    winner = start_turn(grid, internal_gridmap, :"Player One (x)")
 
-    grid = TableRex.Table.clear_rows(grid)
-    IO.inspect(grid)
-    IO.inspect(internal_gridmap)
-    grid = TableRex.Table.add_rows(grid, convert_map_to_grid(internal_gridmap))
-    IO.puts(TableRex.Table.render!(grid, horizontal_style: :all, intersection_symbol: "•"))
+    # When the code reaches here, either player one or two has won!
+    IO.puts("CONGRATULATIONS!\nThe winner is #{winner}!")
   end
+
+  def start_turn(grid, internal_gridmap, player, finished \\ false)
+  def start_turn(_, _, _, finished) when finished == true, do: :"Player One (x)"
+  def start_turn(grid, internal_gridmap, player, _) do
+    input = IO.gets("#{player} select an empty coordinate (ex: a0, b1, c2, etc...): ") |> String.trim() |> String.to_existing_atom()
+
+    # ERROR CHECKING
+    if Map.get(internal_gridmap, input) != :- do
+      if !Map.has_key?(internal_gridmap, input) do
+        raise ArgumentError
+      else
+        raise "ERROR! #{input} is not an empty coordinate! Please try again and input a valid coordinate!"
+      end
+    end
+
+    internal_gridmap = Map.put(internal_gridmap, input, convert_player_to_symbol(player))
+    IO.puts(TableRex.Table.render!(update_grid_with_internal_map(grid, internal_gridmap), horizontal_style: :all, intersection_symbol: "•"))
+
+    if player == :"Player One (x)" do
+      start_turn(grid, internal_gridmap, :"Player Two (o)", game_is_finished(internal_gridmap))
+    else
+      start_turn(grid, internal_gridmap, :"Player One (x)", game_is_finished(internal_gridmap))
+    end
+  rescue
+    ArgumentError ->
+      IO.puts("ERROR! Please try again and input a valid coordinate!")
+      start_turn(grid, internal_gridmap, player)
+    error in RuntimeError ->
+      IO.puts(error.message)
+      start_turn(grid, internal_gridmap, player)
+  end
+
+  def game_is_finished(internal_gridmap), do: !Enum.any?(internal_gridmap, fn {_, value} -> value == :- end)
+
+  def convert_player_to_symbol(player) do
+    if player == :"Player One (x)" do
+      :x
+    else
+      :o
+    end
+  end
+
+  def update_grid_with_internal_map(grid, internal_gridmap), do: TableRex.Table.clear_rows(grid) |> TableRex.Table.add_rows(convert_map_to_grid(internal_gridmap))
 
   def decide_color(text, value) do
     case value do
@@ -61,24 +100,5 @@ defmodule Tictactoe do
       [map.a1, map.b1, map.c1, 1],
       [map.a2, map.b2, map.c2, 2]
     ]
-  end
-
-  def ask_for_coordinates(map) do
-    coord_input = String.trim(IO.gets("Insert coordinates (ex: a0, b1, c2...): "), "\n")
-
-    if Map.has_key?(map, String.to_existing_atom(coord_input)) do
-      ask_for_value(map, String.to_existing_atom(coord_input))
-    else
-      ask_for_coordinates(map)
-    end
-  end
-
-  def ask_for_value(map, coordinate) do
-    value_input = String.trim(IO.gets("Insert x or o: "), "\n")
-    if value_input === "x" or value_input === "o" do
-      Map.replace!(map, coordinate, value_input)
-    else
-      ask_for_value(map, coordinate)
-    end
   end
 end
