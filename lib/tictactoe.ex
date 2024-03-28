@@ -42,7 +42,14 @@ defmodule Tictactoe do
   end
 
   def start_turn(grid, internal_gridmap, player, finished \\ false)
-  def start_turn(_, _, _, finished) when finished == true, do: :"Player One (x)"
+  def start_turn(_, _, player, finished) when finished do
+    # If we have started a turn and the game is finished, the last player to go has won
+    if player == :"Player One (x)" do
+      :"Player Two (o)"
+    else
+      :"Player One (x)"
+    end
+  end
   def start_turn(grid, internal_gridmap, player, _) do
     input = IO.gets("#{player} select an empty coordinate (ex: a0, b1, c2, etc...): ") |> String.trim() |> String.to_existing_atom()
 
@@ -72,7 +79,27 @@ defmodule Tictactoe do
       start_turn(grid, internal_gridmap, player)
   end
 
-  def game_is_finished(internal_gridmap), do: !Enum.any?(internal_gridmap, fn {_, value} -> value == :- end)
+  def game_is_finished(internal_gridmap) do
+    if !Enum.any?(internal_gridmap, fn {_, value} -> value == :- end) do
+      true
+    else
+      check_victory_conditions(internal_gridmap)
+    end
+  end
+
+  def check_victory_conditions(map) do
+    cond do
+      (map.a0 == map.a1) && (map.a1 == map.a2) && (map.a0 != :-) -> true
+      (map.b0 == map.b1) && (map.b1 == map.b2) && (map.b0 != :-) -> true
+      (map.c0 == map.c1) && (map.c1 == map.c2) && (map.c0 != :-) -> true
+      (map.a0 == map.b0) && (map.b0 == map.c0) && (map.a0 != :-) -> true
+      (map.a1 == map.b1) && (map.b1 == map.c1) && (map.a1 != :-) -> true
+      (map.a2 == map.b2) && (map.b2 == map.c2) && (map.a2 != :-) -> true
+      (map.a0 == map.b1) && (map.b1 == map.c2) && (map.a0 != :-) -> true
+      (map.a2 == map.b1) && (map.b1 == map.c0) && (map.a2 != :-) -> true
+      true -> false
+    end
+  end
 
   def convert_player_to_symbol(player) do
     if player == :"Player One (x)" do
