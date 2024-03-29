@@ -2,7 +2,7 @@ defmodule Tictactoe do
   use Application
   alias TableRex
 
-  @title "
+  @title_art "
   ╦ ╦╔═╗╦  ╔═╗╔═╗╔╦╗╔═╗  ╔╦╗╔═╗
   ║║║║╣ ║  ║  ║ ║║║║║╣    ║ ║ ║
   ╚╩╝╚═╝╩═╝╚═╝╚═╝╩ ╩╚═╝   ╩ ╚═╝
@@ -11,13 +11,79 @@ defmodule Tictactoe do
      ╩ ╩╚═╝ ╩ ╩ ╩╚═╝ ╩ ╚═╝╚═╝
 -----------------------------------"
 
+  # Backslashes in ASCII art had to be escaped, so it looks a little weird here
+  # Here is what everything would look like on the console
+
+  #                                         __  __
+  #                                         \•\/•/ ∩
+  #                                         /\  /_/
+  #                                        U /  \
+  #                                         /_/\_\
+  #                                         //  \\
+  #                                       (__)  (__)
+  #  ___   _      __    _     ____  ___       ___   _      ____      _       _   _      __
+  # | |_) | |    / /\  \ \_/ | |_  | |_)     / / \ | |\ | | |_      \ \    /| | | |\ | ( (`
+  # |_|   |_|__ /_/--\  |_|  |_|__ |_| \     \_\_/ |_| \| |_|__      \_\/\/ |_| |_| \| _)_)
+
+  @x_winner_art "
+                                        __  __
+                                        \\•\\/•/ ∩
+                                        /\\  /_/
+                                       U /  \\
+                                        /_/\\_\\
+                                        //  \\\\
+                                      (__)  (__)
+ ___   _      __    _     ____  ___       ___   _      ____      _       _   _      __
+| |_) | |    / /\\  \\ \\_/ | |_  | |_)     / / \\ | |\\ | | |_      \\ \\    /| | | |\\ | ( (`
+|_|   |_|__ /_/--\\  |_|  |_|__ |_| \\     \\_\\_/ |_| \\| |_|__      \\_\\/\\/ |_| |_| \\| _)_) "
+
+  #                                        ∩ ___  ∩
+  #                                        \/•_ \/
+  #                                        | | | |
+  #                                      .-|_| |_|
+  #                                      \_)\___/
+  #                                          \\
+  #                                          (__)
+  #  ___   _      __    _     ____  ___      _____  _       ___       _       _   _      __
+  # | |_) | |    / /\  \ \_/ | |_  | |_)      | |  \ \    // / \     \ \    /| | | |\ | ( (`
+  # |_|   |_|__ /_/--\  |_|  |_|__ |_| \      |_|   \_\/\/ \_\_/      \_\/\/ |_| |_| \| _)_)
+
+  @o_winner_art "
+                                       ∩ ___  ∩
+                                       \\/•_ \\/
+                                       | | | |
+                                     .-|_| |_|
+                                     \\_)\\___/
+                                         \\\\
+                                         (__)
+ ___   _      __    _     ____  ___      _____  _       ___       _       _   _      __
+| |_) | |    / /\\  \\ \\_/ | |_  | |_)      | |  \\ \\    // / \\     \\ \\    /| | | |\\ | ( (`
+|_|   |_|__ /_/--\\  |_|  |_|__ |_| \\      |_|   \\_\\/\\/ \\_\\_/      \\_\\/\\/ |_| |_| \\| _)_) "
+
+  #    __  __                 ∩ ___  ∩
+  #    \•\/•/ ∩  ┳┓┳┓┏┓┓ ┏    \/•_ \/
+  #    /\  /_/   ┃┃┣┫┣┫┃┃┃    | | | |
+  #   U /  \     ┻┛┛┗┛┗┗┻┛  .-|_| |_|
+  #    /_/\_\     _______   \_)\___/
+  #    //  \\    |       |      \\
+  #  (__)  (__)  |       |     (__)
+
+   @draw_art "
+   __  __                 ∩ ___  ∩
+   \\•\\/•/ ∩  ┳┓┳┓┏┓┓ ┏    \\/•_ \\/
+   /\\  /_/   ┃┃┣┫┣┫┃┃┃    | | | |
+  U /  \\     ┻┛┛┗┛┗┗┻┛  .-|_| |_|
+   /_/\\_\\     _______   \\_)\\___/
+   //  \\\\    |       |      \\\\
+ (__)  (__)  |       |     (__)"
+
   def start(_type, _args) do
     Tictactoe.setup_game()
     Supervisor.start_link([], strategy: :one_for_one)
   end
 
   def setup_game do
-    IO.puts(@title)
+    IO.puts(@title_art)
 
     internal_gridmap = %{
       a0: :-,
@@ -38,18 +104,18 @@ defmodule Tictactoe do
     winner = start_turn(grid, internal_gridmap, :"Player One (x)")
 
     # When the code reaches here, either player one or two has won!
-    IO.puts("CONGRATULATIONS!\nThe winner is #{winner}!")
+    case winner do
+      :- ->
+        IO.puts(@draw_art)
+      :x ->
+        IO.puts(@x_winner_art)
+      :o ->
+        IO.puts(@o_winner_art)
+    end
   end
 
   def start_turn(grid, internal_gridmap, player, finished \\ false)
-  def start_turn(_, _, player, finished) when finished do
-    # If we have started a turn and the game is finished, the last player to go has won
-    if player == :"Player One (x)" do
-      :"Player Two (o)"
-    else
-      :"Player One (x)"
-    end
-  end
+  def start_turn(_, _, _, finished) when finished != false, do: finished
   def start_turn(grid, internal_gridmap, player, _) do
     input = IO.gets("#{player} select an empty coordinate (ex: a0, b1, c2, etc...): ") |> String.trim() |> String.to_existing_atom()
 
@@ -81,7 +147,7 @@ defmodule Tictactoe do
 
   def game_is_finished(internal_gridmap) do
     if !Enum.any?(internal_gridmap, fn {_, value} -> value == :- end) do
-      true
+      :-
     else
       check_victory_conditions(internal_gridmap)
     end
@@ -89,14 +155,14 @@ defmodule Tictactoe do
 
   def check_victory_conditions(map) do
     cond do
-      (map.a0 == map.a1) && (map.a1 == map.a2) && (map.a0 != :-) -> true
-      (map.b0 == map.b1) && (map.b1 == map.b2) && (map.b0 != :-) -> true
-      (map.c0 == map.c1) && (map.c1 == map.c2) && (map.c0 != :-) -> true
-      (map.a0 == map.b0) && (map.b0 == map.c0) && (map.a0 != :-) -> true
-      (map.a1 == map.b1) && (map.b1 == map.c1) && (map.a1 != :-) -> true
-      (map.a2 == map.b2) && (map.b2 == map.c2) && (map.a2 != :-) -> true
-      (map.a0 == map.b1) && (map.b1 == map.c2) && (map.a0 != :-) -> true
-      (map.a2 == map.b1) && (map.b1 == map.c0) && (map.a2 != :-) -> true
+      (map.a0 == map.a1) && (map.a1 == map.a2) && (map.a0 != :-) -> map.a0
+      (map.b0 == map.b1) && (map.b1 == map.b2) && (map.b0 != :-) -> map.b0
+      (map.c0 == map.c1) && (map.c1 == map.c2) && (map.c0 != :-) -> map.c0
+      (map.a0 == map.b0) && (map.b0 == map.c0) && (map.a0 != :-) -> map.a0
+      (map.a1 == map.b1) && (map.b1 == map.c1) && (map.a1 != :-) -> map.a1
+      (map.a2 == map.b2) && (map.b2 == map.c2) && (map.a2 != :-) -> map.a2
+      (map.a0 == map.b1) && (map.b1 == map.c2) && (map.a0 != :-) -> map.a0
+      (map.a2 == map.b1) && (map.b1 == map.c0) && (map.a2 != :-) -> map.a2
       true -> false
     end
   end
