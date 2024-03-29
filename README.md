@@ -1,8 +1,13 @@
 # Tictactoe
 
-A basic Tic-Tac-Toe game created in Elixir and playable on the console!
-Still a work-in-progress, but when it is done it is able to support players taking turns
-filling out a board until a row is complete or the board is filled.
+_By: Nami Eskandarian_
+
+A simple Tic-Tac-Toe game with cool ASCII art created in Elixir!
+Playable in the console, two players will take turns picking spaces to put 'x' or 'o' until a winner has been chosen or the game is a draw.
+
+<p align="center">
+  <img src="./title.png" />
+</p>
 
 ## Installation
 
