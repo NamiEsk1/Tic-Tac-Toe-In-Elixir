@@ -1,4 +1,14 @@
 defmodule Tictactoe do
+  @moduledoc """
+    This is a Tic-Tac-Toe game created in Elixir and made to play using a keyboard, two players, and the console.
+    Both players will take turns selecting coordinates on a grid table putting either 'x' or 'o'.
+    When one player gets three of their symbols in a row (either vertically, horizontally, or diagonally) then they win.
+    If all positions on the grid are filled with no victor, then the game ends in a draw.
+
+    Author: Nami Eskandarian
+    Version: 1.0 (03/28/2024)
+  """
+
   use Application
   alias TableRex
 
@@ -82,6 +92,11 @@ defmodule Tictactoe do
     Supervisor.start_link([], strategy: :one_for_one)
   end
 
+  @doc """
+    Creates an empty map to be filled as the game goes, alongside a table that can be printed onto the console.
+    This method will be the driver for the "start_turn" recursive method where the program will be located for the majority of the game.
+    After the game is finished, this method will print the outcome of the game.
+  """
   def setup_game do
     IO.puts(@title_art)
 
@@ -114,9 +129,19 @@ defmodule Tictactoe do
     end
   end
 
+  @doc """
+    A recursive method that starts a turn for either player one or player two. Returns which symbol is the winner (or a hyphen if it's a draw)
+
+    The method starts by getting proper user input for a coordinate on the table (which is the key for the internal map).
+    If that space isn't already filled, it will fill the space with the player's symbol, update the map, then start the other player's turn.
+    This method has a guard clause for when the game is finished, where it will return.
+
+    Returns: ':x', ':o', ':-'
+  """
   def start_turn(grid, internal_gridmap, player, finished \\ false)
   def start_turn(_, _, _, finished) when finished != false, do: finished
   def start_turn(grid, internal_gridmap, player, _) do
+
     input = IO.gets("#{player} select an empty coordinate (ex: a0, b1, c2, etc...): ") |> String.trim() |> String.to_existing_atom()
 
     # ERROR CHECKING
@@ -128,14 +153,17 @@ defmodule Tictactoe do
       end
     end
 
+    # Update map and print new grid
     internal_gridmap = Map.put(internal_gridmap, input, convert_player_to_symbol(player))
     IO.puts(TableRex.Table.render!(update_grid_with_internal_map(grid, internal_gridmap), horizontal_style: :all, intersection_symbol: "•"))
 
+    # Start the next turn (the other player)
     if player == :"Player One (x)" do
       start_turn(grid, internal_gridmap, :"Player Two (o)", game_is_finished(internal_gridmap))
     else
       start_turn(grid, internal_gridmap, :"Player One (x)", game_is_finished(internal_gridmap))
     end
+
   rescue
     ArgumentError ->
       IO.puts("ERROR! Please try again and input a valid coordinate!")
@@ -145,6 +173,11 @@ defmodule Tictactoe do
       start_turn(grid, internal_gridmap, player)
   end
 
+  @doc """
+    This method will check if either the game ends in a draw, or a victory condition has been met
+
+    Returns: false, ':-', ':x', ':o'
+  """
   def game_is_finished(internal_gridmap) do
     if !Enum.any?(internal_gridmap, fn {_, value} -> value == :- end) do
       :-
@@ -153,6 +186,13 @@ defmodule Tictactoe do
     end
   end
 
+  @doc """
+    This method will check all possible scenarios where a victory could occur (three in a row)
+    If three of the same symbol are in a row in the map, that symbol is returned.
+    Otherwise, false is returned to signify nobody has won yet
+
+    Returns: false, ':x', ':o'
+  """
   def check_victory_conditions(map) do
     cond do
       (map.a0 == map.a1) && (map.a1 == map.a2) && (map.a0 != :-) -> map.a0
@@ -167,6 +207,9 @@ defmodule Tictactoe do
     end
   end
 
+  @doc """
+    Converts the player atom to its corresponding symbol atom to fill on the table
+  """
   def convert_player_to_symbol(player) do
     if player == :"Player One (x)" do
       :x
@@ -175,8 +218,14 @@ defmodule Tictactoe do
     end
   end
 
+  @doc """
+    Clears the table and inserts a new map into it. This is done to keep prior metadata settings for the table.
+  """
   def update_grid_with_internal_map(grid, internal_gridmap), do: TableRex.Table.clear_rows(grid) |> TableRex.Table.add_rows(convert_map_to_grid(internal_gridmap))
 
+  @doc """
+    Function to pass into the metadata of the table to determine color of symbol inserted into the table
+  """
   def decide_color(text, value) do
     case value do
       "-" -> [:white, text]
@@ -186,6 +235,9 @@ defmodule Tictactoe do
     end
   end
 
+  @doc """
+    Converts the internal map to the printable grid table
+  """
   def convert_map_to_grid(map) do
     [
       [:a, :b, :c, "☺"],
